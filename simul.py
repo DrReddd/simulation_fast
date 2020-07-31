@@ -36,13 +36,15 @@ def fisher_inf(theta):
 
 
 #  test with the null
-def test1(estimates, null, data_size, significance=0.95):
+def test1(estimates, null, data_size, significance):
+    significance = 1 - significance
     t1 = data_size * (estimates - null) ** 2 * fisher_inf(null)
     return np.mean(t1 > chi2.ppf(q=significance, df=1))
 
 
 #  test with the MLE estimates
-def test2(estimates, null, data_size, significance=0.95):
+def test2(estimates, null, data_size, significance):
+    significance = 1 - significance
     t2 = data_size * (estimates - null) ** 2 * np.vectorize(fisher_inf)(estimates)
     return np.mean(t2 > chi2.ppf(q=significance, df=1))
 
@@ -52,6 +54,7 @@ simulation_number = 10000
 theta0 = 0.2
 theta_alt1 = 0.1
 theta_alt2 = 0.3
+significance_level = 0.1
 
 #  simulation data, where H0: theta = 0.2 is true
 simulation_matrix_0 = np.zeros((data_size, simulation_number))
@@ -74,16 +77,16 @@ est_alt2 = max_l_estimator(simulation_matrix_alt2)
 
 print(f"\n Error rates with sample size of {data_size}, and number of simulations {simulation_number}: \n")
 #  type 1 error rates
-print(f" Type 1 error under first test (H0: theta = {theta0}): {test1(est_0, theta0, data_size)}")
-print(f" Type 1 error under second test (H0: theta = {theta0}): {test2(est_0, theta0, data_size)} \n")
+print(f" Type 1 error under first test (H0: theta = {theta0}): {test1(est_0, theta0, data_size, significance_level)}")
+print(f" Type 1 error under second test (H0: theta = {theta0}): {test2(est_0, theta0, data_size, significance_level)} \n")
 
 #  type 2 error rates for H1: theta = 0.1
-print(f" Type 2 error under first test (H1: theta = {theta_alt1}): {1 - test1(est_alt1, theta0, data_size)}")
-print(f" Type 2 error under second test (H1: theta = {theta_alt1}): {1 - test2(est_alt1, theta0, data_size)} \n")
+print(f" Type 2 error under first test (H1: theta = {theta_alt1}): {1 - test1(est_alt1, theta0, data_size, significance_level)}")
+print(f" Type 2 error under second test (H1: theta = {theta_alt1}): {1 - test2(est_alt1, theta0, data_size, significance_level)} \n")
 
 #  type 2 error rates for H2: theta = 0.3
-print(f" Type 2 error under first test (H1: theta = {theta_alt2}): {1 - test1(est_alt2, theta0, data_size)}")
-print(f" Type 2 error under second test (H1: theta = {theta_alt2}): {1 - test2(est_alt2, theta0, data_size)} \n")
+print(f" Type 2 error under first test (H1: theta = {theta_alt2}): {1 - test1(est_alt2, theta0, data_size, significance_level)}")
+print(f" Type 2 error under second test (H1: theta = {theta_alt2}): {1 - test2(est_alt2, theta0, data_size, significance_level)} \n")
 
 #  END OF SIMULATION FROM THE RECITATION
 
@@ -106,10 +109,10 @@ t222 = []
 print(f"Generating data and testing for different sample sizes ({sample_size_min} to {sample_size_max}), with "
       f"{simulation_number} simulations for a given sample size:")
 
-with tqdm(total=sample_size_max-sample_size_min) as pbar:
+with tqdm(total=sample_size_max - sample_size_min) as pbar:
     for count, data_size in enumerate(data_sizes):
         pbar.update(1)
-        
+
         #  simulation data, where H0: theta = 0.2 is true
         simulation_matrix_0 = np.zeros((data_size, simulation_number))
         for simulation in range(simulation_number):
@@ -128,18 +131,25 @@ with tqdm(total=sample_size_max-sample_size_min) as pbar:
         est_0 = max_l_estimator(simulation_matrix_0)
         est_alt1 = max_l_estimator(simulation_matrix_alt1)
         est_alt2 = max_l_estimator(simulation_matrix_alt2)
-        t11.append(test1(est_0, theta0, data_size))
-        t12.append(test2(est_0, theta0, data_size))
-        t211.append(1 - test1(est_alt1, theta0, data_size))
-        t212.append(1 - test2(est_alt1, theta0, data_size))
-        t221.append(1 - test1(est_alt2, theta0, data_size))
-        t222.append(1 - test2(est_alt2, theta0, data_size))
+        t11.append(test1(est_0, theta0, data_size, significance_level))
+        t12.append(test2(est_0, theta0, data_size, significance_level))
+        t211.append(1 - test1(est_alt1, theta0, data_size, significance_level))
+        t212.append(1 - test2(est_alt1, theta0, data_size, significance_level))
+        t221.append(1 - test1(est_alt2, theta0, data_size, significance_level))
+        t222.append(1 - test2(est_alt2, theta0, data_size, significance_level))
 
-plt.plot(data_sizes, t211, ".-", label=f"H1: {theta_alt1}, Test1")
-plt.plot(data_sizes, t212, ".-", label=f"H1: {theta_alt1}, Test2")
-plt.plot(data_sizes, t221, ".-", label=f"H1: {theta_alt2}, Test1")
-plt.plot(data_sizes, t222, ".-", label=f"H1: {theta_alt2}, Test2")
-plt.legend(loc="upper right")
+fig, ax = plt.subplots()
+pl_t11, = plt.plot(data_sizes, t11, ".-", alpha=0.3, label=f"H0: {theta0}, Test1")
+pl_t12, = plt.plot(data_sizes, t12, ".-", alpha=0.3, label=f"H0: {theta0}, Test2")
+pl_asymp, = plt.plot(data_sizes, [significance_level for i in data_sizes], "--", alpha=0.5, color="black", label="Asymptotic")
+legend1 = plt.legend(handles=[pl_t11, pl_t12, pl_asymp], loc=7)
+plt.gca().add_artist(legend1)
+plt.text(0.05, significance_level+0.05, "Type 1 error rates", alpha=0.8, transform=ax.transAxes)
+pl_t211, = plt.plot(data_sizes, t211, ".-", label=f"H1: {theta_alt1}, Test1")
+pl_t212, = plt.plot(data_sizes, t212, ".-", label=f"H1: {theta_alt1}, Test2")
+pl_t221, = plt.plot(data_sizes, t221, ".-", label=f"H1: {theta_alt2}, Test1")
+pl_t222, = plt.plot(data_sizes, t222, ".-", label=f"H1: {theta_alt2}, Test2")
+plt.legend(handles=[pl_t211, pl_t212, pl_t221, pl_t222], loc="upper right")
 plt.xlabel("Sample size")
 plt.ylabel("Type 2 error rate")
 plt.title("Type II errors as a function of sample size")
