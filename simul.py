@@ -85,6 +85,8 @@ print(f" Type 2 error under second test (H1: theta = {theta_alt1}): {1 - test2(e
 print(f" Type 2 error under first test (H1: theta = {theta_alt2}): {1 - test1(est_alt2, theta0, data_size)}")
 print(f" Type 2 error under second test (H1: theta = {theta_alt2}): {1 - test2(est_alt2, theta0, data_size)} \n")
 
+#  END OF SIMULATION FROM THE RECITATION
+
 #  plot type 2 errors as a function of sample size
 sample_size_min = 5
 sample_size_max = 200
@@ -104,31 +106,34 @@ t222 = []
 print(f"Generating data and testing for different sample sizes ({sample_size_min} to {sample_size_max}), with "
       f"{simulation_number} simulations for a given sample size:")
 
-for count, data_size in tqdm(enumerate(data_sizes), total=sample_size_max - sample_size_min):
-    # print(f"Simulating sample size of {count+sample_size_min+1} out of 200")
-    simulation_matrix_0 = np.zeros((data_size, simulation_number))
-    for simulation in range(simulation_number):
-        simulation_matrix_0[:, simulation] = generate(theta0, data_size)
+with tqdm(total=sample_size_max-sample_size_min) as pbar:
+    for count, data_size in enumerate(data_sizes):
+        pbar.update(1)
+        
+        #  simulation data, where H0: theta = 0.2 is true
+        simulation_matrix_0 = np.zeros((data_size, simulation_number))
+        for simulation in range(simulation_number):
+            simulation_matrix_0[:, simulation] = generate(theta0, data_size)
 
-    #  simulation data, where H1: theta = 0.1 is true
-    simulation_matrix_alt1 = np.zeros((data_size, simulation_number))
-    for simulation in range(simulation_number):
-        simulation_matrix_alt1[:, simulation] = generate(theta_alt1, data_size)
+        #  simulation data, where H1: theta = 0.1 is true
+        simulation_matrix_alt1 = np.zeros((data_size, simulation_number))
+        for simulation in range(simulation_number):
+            simulation_matrix_alt1[:, simulation] = generate(theta_alt1, data_size)
 
-    #  simulation data, where H1: theta = 0.3 is true
-    simulation_matrix_alt2 = np.zeros((data_size, simulation_number))
-    for simulation in range(simulation_number):
-        simulation_matrix_alt2[:, simulation] = generate(theta_alt2, data_size)
+        #  simulation data, where H1: theta = 0.3 is true
+        simulation_matrix_alt2 = np.zeros((data_size, simulation_number))
+        for simulation in range(simulation_number):
+            simulation_matrix_alt2[:, simulation] = generate(theta_alt2, data_size)
 
-    est_0 = max_l_estimator(simulation_matrix_0)
-    est_alt1 = max_l_estimator(simulation_matrix_alt1)
-    est_alt2 = max_l_estimator(simulation_matrix_alt2)
-    t11.append(test1(est_0, theta0, data_size))
-    t12.append(test2(est_0, theta0, data_size))
-    t211.append(1 - test1(est_alt1, theta0, data_size))
-    t212.append(1 - test2(est_alt1, theta0, data_size))
-    t221.append(1 - test1(est_alt2, theta0, data_size))
-    t222.append(1 - test2(est_alt2, theta0, data_size))
+        est_0 = max_l_estimator(simulation_matrix_0)
+        est_alt1 = max_l_estimator(simulation_matrix_alt1)
+        est_alt2 = max_l_estimator(simulation_matrix_alt2)
+        t11.append(test1(est_0, theta0, data_size))
+        t12.append(test2(est_0, theta0, data_size))
+        t211.append(1 - test1(est_alt1, theta0, data_size))
+        t212.append(1 - test2(est_alt1, theta0, data_size))
+        t221.append(1 - test1(est_alt2, theta0, data_size))
+        t222.append(1 - test2(est_alt2, theta0, data_size))
 
 plt.plot(data_sizes, t211, ".-", label=f"H1: {theta_alt1}, Test1")
 plt.plot(data_sizes, t212, ".-", label=f"H1: {theta_alt1}, Test2")
