@@ -54,7 +54,7 @@ simulation_number = 10000
 theta0 = 0.2
 theta_alt1 = 0.1
 theta_alt2 = 0.3
-significance_level = 0.1
+significance_level = 0.05
 
 #  simulation data, where H0: theta = 0.2 is true
 simulation_matrix_0 = np.zeros((data_size, simulation_number))
