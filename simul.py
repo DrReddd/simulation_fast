@@ -18,13 +18,7 @@ def generate(theta, size_of_data):
 
 #  deriving the MLE estimates of the simulation data: (2*n1+n0)/2*n
 def max_l_estimator(simulation_matrix):
-    ones = np.where(simulation_matrix == 1)
-    zeros = np.where(simulation_matrix == 0)
-    for_estimates = np.zeros(simulation_matrix.shape)
-    for_estimates[zeros] = 1
-    for_estimates[ones] = 2
-    estimates = np.mean(for_estimates, axis=0) / 2
-    return estimates
+    return np.mean(simulation_matrix+1, axis=0) / 2
 
 
 #  fisher information
