@@ -135,7 +135,7 @@ with tqdm(total=sample_size_max - sample_size_min) as pbar:
 fig, ax = plt.subplots()
 pl_t11, = plt.plot(data_sizes, t11, ".-", alpha=0.3, label=f"H0: {theta0}, Test1")
 pl_t12, = plt.plot(data_sizes, t12, ".-", alpha=0.3, label=f"H0: {theta0}, Test2")
-pl_asymp, = plt.plot(data_sizes, [significance_level for i in data_sizes], "--", alpha=0.5, color="black", label="Asymptotic")
+pl_asymp, = plt.plot(data_sizes, [significance_level for _ in data_sizes], "--", alpha=0.5, color="black", label="Asymptotic")
 legend1 = plt.legend(handles=[pl_t11, pl_t12, pl_asymp], loc=7)
 plt.gca().add_artist(legend1)
 plt.text(0.05, significance_level+0.05, "Type 1 error rates", alpha=0.8, transform=ax.transAxes)
